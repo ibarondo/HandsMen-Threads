@@ -1,0 +1,27 @@
+@isTest
+public class InventoryBatchJob_Test {
+    @isTest
+    static void testInventoryBatchJob() {
+        // 1. Create sample products with low stock
+        List<HandsMen_Product__c> products = new List<HandsMen_Product__c>();
+        products.add(new HandsMen_Product__c(Name='Product 1', Stock_Quantity__c=5));
+        products.add(new HandsMen_Product__c(Name='Product 2', Stock_Quantity__c=2));
+        insert products;
+
+        // 2. Run the batch
+        Test.startTest();
+        InventoryBatchJob batch = new InventoryBatchJob();
+        Database.executeBatch(batch, 200);
+        Test.stopTest();
+
+        // 3. Verify that the stock was updated correctly
+        List<HandsMen_Product__c> updatedProducts = [
+            SELECT Stock_Quantity__c FROM HandsMen_Product__c
+        ];
+
+        for (HandsMen_Product__c p : updatedProducts) {
+            System.assert(p.Stock_Quantity__c >= 50, 
+                'Stock should be restocked by 50 units');
+        }
+    }
+}

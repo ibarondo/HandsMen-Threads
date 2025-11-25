@@ -1,0 +1,41 @@
+@isTest
+public class OrderTotalTrigger_Test {
+    @isTest
+    static void testOrderTotalCalculation() {
+        // 1. Create sample Product
+        HandsMen_Product__c product = new HandsMen_Product__c(
+            Name = 'Test Product',
+            Price__c = 100
+        );
+        insert product;
+
+        // 2. Create sample Customer
+        HandsMen_Customer__c customer = new HandsMen_Customer__c(
+            FirstName__c = 'Test Customer',
+            Email__c = 'testcustomer@gmail.com'
+        );
+        insert customer;
+
+        // 3. Create Order linked to product and customer
+        HandsMen_Order__c order = new HandsMen_Order__c(
+            Product__c = product.Id,
+            Customer__c = customer.Id,
+            Customer_Email__c = 'testcustomer@gmail.com',
+            Quantity__c = 5,
+            Status__c = 'Pending'
+        );
+        
+        insert order; // Trigger runs here
+
+        // 4. Query the inserted order
+        HandsMen_Order__c insertedOrder = [
+            SELECT Total_Amount__c
+            FROM HandsMen_Order__c
+            WHERE Id = :order.Id
+        ];
+
+        // 5. Assert Total_Amount__c is correct
+        System.assertEquals(500, insertedOrder.Total_Amount__c, 
+            'Total_Amount__c should be Quantity * Price');
+    }
+}

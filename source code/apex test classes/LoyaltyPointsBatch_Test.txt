@@ -1,0 +1,40 @@
+@isTest
+public class LoyaltyPointsBatch_Test {
+
+    @isTest
+    static void testLoyaltyPointsBatch() {
+        // 1. Create sample customers
+        HandsMen_Customer__c cust1 = new HandsMen_Customer__c(
+            Name = 'Customer Gold',
+            Total_Purchases__c = 1500, 
+            Email__c = 'test@gmail.com'
+        );
+        HandsMen_Customer__c cust2 = new HandsMen_Customer__c(
+            Name = 'Customer Silver',
+            Total_Purchases__c = 700, 
+            Email__c = 'test@gmail.com'
+        );
+        HandsMen_Customer__c cust3 = new HandsMen_Customer__c(
+            Name = 'Customer Bronze',
+            Total_Purchases__c = 300, 
+            Email__c = 'test@gmail.com'
+        );
+
+        insert new List<HandsMen_Customer__c>{cust1, cust2, cust3};
+
+        // 2. Execute batch class
+        Test.startTest();
+        LoyaltyPointsBatch batch = new LoyaltyPointsBatch();
+        Database.executeBatch(batch, 200);
+        Test.stopTest();
+
+        // 3. Verify results
+        cust1 = [SELECT Loyalty_Status__c FROM HandsMen_Customer__c WHERE Id = :cust1.Id];
+        cust2 = [SELECT Loyalty_Status__c FROM HandsMen_Customer__c WHERE Id = :cust2.Id];
+        cust3 = [SELECT Loyalty_Status__c FROM HandsMen_Customer__c WHERE Id = :cust3.Id];
+
+        System.assertEquals('Gold', cust1.Loyalty_Status__c, 'Gold customer should be Gold');
+        System.assertEquals('Silver', cust2.Loyalty_Status__c, 'Silver customer should be Silver');
+        System.assertEquals('Bronze', cust3.Loyalty_Status__c, 'Bronze customer should be Bronze');
+    }
+}

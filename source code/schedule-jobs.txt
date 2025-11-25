@@ -1,0 +1,3 @@
+System.schedule('Daily Inventory Sync', '0 0 2 * * ?', new InventoryBatchJob());
+
+System.schedule('Weekly Loyalty Points Update', '0 0 0 ? * 1 *', new LoyaltyPointsBatch());

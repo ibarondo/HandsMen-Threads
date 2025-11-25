@@ -1,0 +1,51 @@
+global class LoyaltyPointsBatch implements Database.Batchable<SObject>, Schedulable {
+    
+global Database.QueryLocator start(Database.BatchableContext BC) {
+
+return Database.getQueryLocator(
+
+'SELECT Id, Total_Purchases__c, Loyalty_Status__c FROM HandsMen_Customer__c'
+
+);
+
+}
+
+    // Step 2: Assign loyalty status
+    global void execute(Database.BatchableContext BC, List<SObject> records) {
+        List<HandsMen_Customer__c> customersToUpdate = new List<HandsMen_Customer__c>();
+        
+        for (SObject s : records) {
+            HandsMen_Customer__c c = (HandsMen_Customer__c)s;
+
+            // Assign loyalty status based on criteria
+            if (c.Total_Purchases__c > 1000) {
+                c.Loyalty_Status__c = 'Gold';
+            } else if (c.Total_Purchases__c <= 500) {
+                c.Loyalty_Status__c = 'Bronze';
+            } else {
+                c.Loyalty_Status__c = 'Silver'; // default
+            }
+
+            customersToUpdate.add(c);
+        }
+
+        if (!customersToUpdate.isEmpty()) {
+            try {
+                update customersToUpdate;
+            } catch (DmlException e) {
+                System.debug('Error updating loyalty status: ' + e.getMessage());
+            }
+        }
+    }
+
+    // Step 3: Finish
+    global void finish(Database.BatchableContext BC) {
+        System.debug('Loyalty Status Update Completed');
+    }
+
+    // Step 4: Optional scheduling
+    global void execute(SchedulableContext SC) {
+        LoyaltyPointsBatch LoyaltyBatchJob = new LoyaltyPointsBatch();
+        Database.executeBatch(LoyaltyBatchJob, 200);
+    }
+}

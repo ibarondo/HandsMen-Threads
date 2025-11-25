@@ -1,0 +1,47 @@
+@isTest
+public class LoyaltyStatusTrigger_Test {
+    @isTest
+    static void testLoyaltyStatusUpdate() {
+        // 1. Create Customers with different purchase totals
+        HandsMen_Customer__c goldCustomer = new HandsMen_Customer__c(
+            FirstName__c = 'Gold Customer',
+            Email__c = 'gold@gmail.com',
+            Total_Purchases__c = 1500
+        );
+
+        HandsMen_Customer__c silverCustomer = new HandsMen_Customer__c(
+            FirstName__c = 'Silver Customer',
+            Email__c = 'silver@gmail.com',
+            Total_Purchases__c = 700
+        );
+
+        HandsMen_Customer__c bronzeCustomer = new HandsMen_Customer__c(
+            FirstName__c = 'Bronze Customer',
+            Email__c = 'bronze@gmail.com',
+            Total_Purchases__c = 400
+        );
+
+        insert new List<HandsMen_Customer__c>{goldCustomer, silverCustomer, bronzeCustomer};
+
+        // 2. Trigger runs automatically on insert or update
+        // No additional action needed
+
+        // 3. Query customers
+        List<HandsMen_Customer__c> updatedCustomers = [
+            SELECT Loyalty_Status__c, Total_Purchases__c 
+            FROM HandsMen_Customer__c
+            WHERE Id IN :new List<Id>{goldCustomer.Id, silverCustomer.Id, bronzeCustomer.Id}
+        ];
+
+        // 4. Assert loyalty statuses
+        for(HandsMen_Customer__c c : updatedCustomers){
+            if(c.Total_Purchases__c > 1000){
+                System.assertEquals('Gold', c.Loyalty_Status__c);
+            } else if(c.Total_Purchases__c <= 500){
+                System.assertEquals('Bronze', c.Loyalty_Status__c);
+            } else {
+                System.assertEquals('Silver', c.Loyalty_Status__c);
+            }
+        }
+    }
+}

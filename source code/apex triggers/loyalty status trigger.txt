@@ -1,0 +1,20 @@
+trigger LoyaltyStatusTrigger 
+on HandsMen_Customer__c (before insert, before update) {
+
+    for (HandsMen_Customer__c customer : Trigger.new) {
+        if (customer.Total_Purchases__c != null) {
+            // Assign loyalty status based on criteria
+            if (customer.Total_Purchases__c > 1000) {
+                customer.Loyalty_Status__c = 'Gold';
+            } else if (customer.Total_Purchases__c <= 500) {
+                customer.Loyalty_Status__c = 'Bronze';
+            } else {
+                customer.Loyalty_Status__c = 'Silver';
+            }
+        } else {
+            // Optional: default if Total_Purchases__c is null
+            customer.Loyalty_Status__c = 'Silver';
+        }
+    }
+
+}

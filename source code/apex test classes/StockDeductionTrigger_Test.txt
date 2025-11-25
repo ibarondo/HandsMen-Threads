@@ -1,0 +1,41 @@
+@isTest
+public class StockDeductionTrigger_Test {
+
+    @isTest
+    static void testStockDeduction() {
+        // 1. Create sample Product
+        HandsMen_Product__c product = new HandsMen_Product__c(
+            Name = 'Test Product',
+            Price__c = 3
+        );
+        insert product;
+
+        // 2. Create Inventory record linked to Product
+        Inventory__c inv = new Inventory__c(
+            Product__c = product.Id,
+            Stock_Quantity__c = 1000
+        );
+        insert inv;
+
+        // 3. Create Order with Status = Confirmed (trigger condition)
+        HandsMen_Order__c order = new HandsMen_Order__c(
+            Product__c = product.Id,
+            Quantity__c = 502,
+            Status__c = 'Confirmed',
+            Customer_Email__c = 'test@gmail.com'
+        );
+
+        insert order; // Trigger runs here
+
+        // 4. Query inventory after trigger execution
+        Inventory__c updatedInv = [
+            SELECT Stock_Quantity__c 
+            FROM Inventory__c 
+            WHERE Id = :inv.Id
+        ];
+
+        // 5. Validate that stock was deducted correctly
+        System.assertEquals(498, updatedInv.Stock_Quantity__c, 
+            'Stock should be reduced by order quantity');
+    }
+}
